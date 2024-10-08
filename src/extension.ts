@@ -2,24 +2,31 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
+let secretStorage: vscode.SecretStorage;
 let panel: vscode.WebviewPanel;
-export function activate(context: vscode.ExtensionContext) {
+let apiKey: any;
 
-	const disposable = vscode.commands.registerCommand('talktocode.talktocode', () => {
-		vscode.window.showInformationMessage('Hello from team Code Switch!');
+export async function activate(context: vscode.ExtensionContext) {
 
-		panel = vscode.window.createWebviewPanel(
-			'talktocode', 
-			'TalkToCode',
-			vscode.ViewColumn.Beside,
-			{ 
-				enableScripts: true, 
-				retainContextWhenHidden: true
-			}
-		);
-		
-		const html = getWebViewContent(context, panel);
-		panel.webview.html = html;
+    secretStorage = context.secrets;
+    await secretStorage.store('BEARER_TOKEN', '<YOUR_BEARER_TOKEN>');
+    apiKey = await secretStorage.get('BEARER_TOKEN');
+
+    const disposable = vscode.commands.registerCommand('talktocode.talktocode', () => {
+        vscode.window.showInformationMessage('Hello from team Code Switch!');
+
+        panel = vscode.window.createWebviewPanel(
+            'talktocode',
+            'TalkToCode',
+            vscode.ViewColumn.Beside,
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true
+            }
+        );
+
+        const html = getWebViewContent(context, panel);
+        panel.webview.html = html;
 
         const editor = vscode.window.activeTextEditor;
 
@@ -28,9 +35,6 @@ export function activate(context: vscode.ExtensionContext) {
             const selection = editor.selection;
             selectedText = editor.document.getText(selection).trim().toLowerCase();
         }
-
-        // Log selectedText for debugging
-        console.log("Selected Code:", selectedText);
 
         panel.webview.onDidReceiveMessage(
             async message => {
@@ -41,62 +45,62 @@ export function activate(context: vscode.ExtensionContext) {
                             vscode.window.showErrorMessage("No code selected.");
                         }
 
-						panel.webview.postMessage({ command: 'showLoading' });
+                        panel.webview.postMessage({ command: 'showLoading' });
 
                         const promptResponse = await vscode.window.withProgress({
-								location: vscode.ProgressLocation.Notification,
-								title: "I am thinking...",
-								cancellable: true
-							}, async (progress, token) => {
-								token.onCancellationRequested(() => {
-									console.log("User canceled the long running operation");
-								});
-					
-								progress.report({ increment: 0 });
-								for(let i = 0; i < 100; i++) {
-									setTimeout(() => {
-										progress.report({ increment: 1, message: ` Progress - ${i}` });
-									}, (i+1) * 1000);
-								}
-					
-								const p = new Promise((resolve, reject) => {
-									const combinedPrompt = `${selectedText}\n${message.prompt}`;
-								
-									if(message.prompt.includes("explain")) {
-										sendToLLMExplain(combinedPrompt)
-										.then((response) => {
-											progress.report({ increment: 100, message: `LLM has finally responded!` });
-											setTimeout(() => {
-												resolve(response); 
-											}, 1000);
-										})
-										
-									}
+                            location: vscode.ProgressLocation.Notification,
+                            title: "I am thinking...",
+                            cancellable: true
+                        }, async (progress, token) => {
+                            token.onCancellationRequested(() => {
+                                console.log("User canceled the long running operation");
+                            });
 
-									else if(message.prompt.includes("review")) {
-										sendToLLMReview(combinedPrompt)
-										.then((response) => {
-											progress.report({ increment: 100, message: `LLM has finally responded!` });
-											setTimeout(() => {
-												resolve(response); 
-											}, 1000);
-										})
-									} 
-									else {
-										sendToLLMConvert(combinedPrompt, selectedText)
-										.then((response) => {
-											progress.report({ increment: 100, message: `LLM has finally responded!` });
-											setTimeout(() => {
-												resolve(response); 
-											}, 1000);
-										})
-									}
-								})
+                            progress.report({ increment: 0 });
+                            for (let i = 0; i < 100; i++) {
+                                setTimeout(() => {
+                                    progress.report({ increment: 1, message: ` Progress - ${i}` });
+                                }, (i + 1) * 1000);
+                            }
 
-								return p;
-						});
-                        
-						panel.webview.postMessage({ command: 'hideLoading' });
+                            const p = new Promise((resolve, reject) => {
+                                const combinedPrompt = `${selectedText}\n${message.prompt}`;
+
+                                if (selectedText.includes("explain")) {
+                                    sendToLLMExplain(combinedPrompt)
+                                        .then((response) => {
+                                            progress.report({ increment: 100, message: `LLM has finally responded!` });
+                                            setTimeout(() => {
+                                                resolve(response);
+                                            }, 1000);
+                                        })
+
+                                }
+
+                                else if (selectedText.includes("review")) {
+                                    sendToLLMReview(combinedPrompt)
+                                        .then((response) => {
+                                            progress.report({ increment: 100, message: `LLM has finally responded!` });
+                                            setTimeout(() => {
+                                                resolve(response);
+                                            }, 1000);
+                                        })
+                                }
+                                else {
+                                    sendToLLMConvert(combinedPrompt, selectedText)
+                                        .then((response) => {
+                                            progress.report({ increment: 100, message: `LLM has finally responded!` });
+                                            setTimeout(() => {
+                                                resolve(response);
+                                            }, 1000);
+                                        })
+                                }
+                            })
+
+                            return p;
+                        });
+
+                        panel.webview.postMessage({ command: 'hideLoading' });
 
                         panel.webview.postMessage({ command: 'receiveResponse', text: promptResponse });
                 }
@@ -104,23 +108,23 @@ export function activate(context: vscode.ExtensionContext) {
             undefined,
             context.subscriptions
         );
-	});
+    });
 
-	context.subscriptions.push(disposable);
+    context.subscriptions.push(disposable);
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }
 
 
 function getWebViewContent(context: vscode.ExtensionContext, panel: vscode.WebviewPanel) {
     const htmlPath = path.join(context.extensionPath, 'media', 'chat.html');
-	const cssPath = panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, 'media', 'chat.css')));
-	const jsPath = panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, 'media', 'chat.js')));
+    const cssPath = panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, 'media', 'chat.css')));
+    const jsPath = panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, 'media', 'chat.js')));
 
     let htmlContent = fs.readFileSync(htmlPath, 'utf8');
-	htmlContent = htmlContent.replace('{{cssUri}}', cssPath.toString());
-	htmlContent = htmlContent.replace('{{jsUri}}', jsPath.toString());
+    htmlContent = htmlContent.replace('{{cssUri}}', cssPath.toString());
+    htmlContent = htmlContent.replace('{{jsUri}}', jsPath.toString());
 
     return htmlContent;
 }
@@ -130,7 +134,7 @@ async function sendToLLMExplain(combinedPrompt: string): Promise<string> {
         const response = await fetch("https://api.arliai.com/v1/chat/completions", {
             method: "POST",
             headers: {
-                "Authorization": `${process.env.BEARER_TOKEN}`,
+                "Authorization": `Bearer ${apiKey}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -153,10 +157,10 @@ async function sendToLLMExplain(combinedPrompt: string): Promise<string> {
         }
 
         const result: any = await response.json();
-        return result.choices[0].message.content; 
+        return result.choices[0].message.content;
     } catch (error: any) {
         console.error('Error sending prompt to LLM:', error);
-        return `Error: ${error.message}`; 
+        return `Error: ${error.message}`;
     }
 }
 async function sendToLLMConvert(prompt: string, codeLanguage: string): Promise<string> {
@@ -164,7 +168,7 @@ async function sendToLLMConvert(prompt: string, codeLanguage: string): Promise<s
         const response = await fetch("https://api.arliai.com/v1/chat/completions", {
             method: "POST",
             headers: {
-                "Authorization": `${process.env.BEARER_TOKEN}`,
+                "Authorization": `Bearer ${apiKey}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -187,10 +191,10 @@ async function sendToLLMConvert(prompt: string, codeLanguage: string): Promise<s
         }
 
         const result: any = await response.json();
-        return result.choices[0].message.content; 
+        return result.choices[0].message.content;
     } catch (error: any) {
         console.error('Error sending prompt to LLM:', error);
-        return `Error: ${error.message}`; 
+        return `Error: ${error.message}`;
     }
 }
 async function sendToLLMReview(combinedPrompt: string): Promise<string> {
@@ -198,7 +202,7 @@ async function sendToLLMReview(combinedPrompt: string): Promise<string> {
         const response = await fetch("https://api.arliai.com/v1/chat/completions", {
             method: "POST",
             headers: {
-                "Authorization": `${process.env.BEARER_TOKEN}`,
+                "Authorization": `Bearer ${apiKey}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -221,9 +225,9 @@ async function sendToLLMReview(combinedPrompt: string): Promise<string> {
         }
 
         const result: any = await response.json();
-        return result.choices[0].message.content; 
+        return result.choices[0].message.content;
     } catch (error: any) {
         console.error('Error sending prompt to LLM:', error);
-        return `Error: ${error.message}`; 
+        return `Error: ${error.message}`;
     }
-}
+};
