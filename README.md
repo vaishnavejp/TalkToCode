@@ -35,9 +35,9 @@
    * Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P` on macOS).
    * Type and select `TalkToCode: TalkToCode`.
 3. The extension will open a webview panel, and you'll be able to:
-   * **Explain**: If your selected code contains the word `"explain"`, the LLM will provide a detailed explanation.
-   * **Review**: If your selected code contains the word `"review"`, the LLM will review the code and add comments.
-   * **Convert**: If your selected code doesn't match the above cases, the LLM will attempt to convert your code to another language.
+   * **Explain**: If your prompt contains the word `"explain"`, the LLM will provide a detailed explanation.
+   * **Review**: If your prompt contains the word `"review"`, the LLM will review the code and add comments.
+   * **Convert**: If your prompt contains the word ` convert to ABC language`, the LLM will attempt to convert your code to that language.
 4. The progress bar will show the progress of the LLM's work.
 
 # Environment Variables
