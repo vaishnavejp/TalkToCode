@@ -2,7 +2,7 @@
 
 ## Overview
 
-**TalkToCode** is a Visual Studio Code extension that leverages a language model (LLM) to assist with code explanations, code reviews, and language conversions. It adds a webview panel to the VS Code interface where you can interact with the extension, sending selected code to an LLM for feedback or transformation.
+**TalkToCode** is a Visual Studio Code extension that leverages a large language model (LLM) to assist with code explanations, code reviews, and language conversions. It adds a webview panel to the VS Code interface where you can interact with the extension, sending selected code to an LLM for feedback or transformation.
 
 ## Features
 
@@ -47,7 +47,7 @@ Make sure to set up the required Bearer token:
 * `BEARER_TOKEN`: The token used for authenticating API requests to the LLM - get this from the website mentioned in the end.
 
 ```bash
-replace <YOUR_BEARER_TOKEN> in src/extension.ts file to your token. Dont include the word Bearer
+replace <YOUR_BEARER_TOKEN> in src/extension.ts file with your token. Dont include the word Bearer
 ```
 
 # Webview Content
