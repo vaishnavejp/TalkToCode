@@ -49,7 +49,7 @@ Make sure to set up the required Bearer token:
 ```bash
 replace <YOUR_BEARER_TOKEN> in src/extension.ts file with your token. Dont include the word Bearer
 ```
-- You may use ours : `f3771319-5ea7-4d7a-86d3-6081a0edb268`, but you might get rate limited due to many requests with this same key. 
+- You may use ours
 
 # Webview Content
 
