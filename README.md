@@ -25,6 +25,8 @@
    ```bash
    npm install
    ```
+5. Compile and run the extension
+   - Press F5 to open a new VS Code window with the extension enabled
 
 # Usage
 
@@ -48,9 +50,20 @@ You can set environment variables by creating a `.env` file in the root of your 
 
 ```bash
 BEARER_TOKEN=your_token_here
+```
 
-6. Open the project in Visual Studio Code:
-   ```bash
-   code .
-   ```
-8. Compile and run the extension
+# Webview Content
+
+The webview content is loaded from the `media` folder. Ensure the following files exist:
+
+* `media/chat.html`: The HTML content for the webview.
+* `media/chat.css`: Stylesheet for the webview.
+* `media/chat.js`: JavaScript to handle webview functionality.
+
+# API Integration
+
+This extension uses the **Meta-Llama-3.1-8B-Instruct** model for code explanation, review, and conversion. It interacts with the API using the following endpoint:
+
+```plaintext
+POST https://api.arliai.com/v1/chat/completions
+```
