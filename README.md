@@ -1,4 +1,4 @@
-# TalkToCode VS Code Extension
+# TalkToCode Visual Studio Code Extension
 
 ## Overview
 
