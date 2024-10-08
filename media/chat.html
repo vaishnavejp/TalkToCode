@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with LLM about your selected code</title>
+    <link rel="stylesheet" href="{{cssUri}}">
+</head>
+
+<body>
+    <div id="container">
+        <h2 style="text-align: center;">Chat with LLM about your selected code</h2>
+        <div id="chat">
+            <div id="output">
+                <div style="display: none;" id="loading">Loading...</div>
+            </div>
+            <textarea id="prompt" rows="4" cols="50"
+                placeholder="Type your prompt here... This prompt, along with the code you have selected will be sent to the LLM"></textarea><br>
+            <button id="send">Send</button>
+        </div>
+    </div>
+    <script src="{{jsUri}}"></script>
+</body>
+
+</html>
