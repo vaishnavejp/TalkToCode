@@ -26,6 +26,8 @@
    npm install
    ```
 5. Compile and run the extension
+   - npm run compile
+   - code --extensionDevelopmentPath=path/to/your/directory
    - Press F5 to open a new VS Code window with the extension enabled
 
 # Usage
