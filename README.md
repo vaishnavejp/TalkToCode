@@ -42,14 +42,12 @@
 
 # Environment Variables
 
-Make sure to set up the required environment variables:
+Make sure to set up the required Bearer token:
 
-* `BEARER_TOKEN`: The token used for authenticating API requests to the LLM.
-
-You can set environment variables by creating a `.env` file in the root of your project:
+* `BEARER_TOKEN`: The token used for authenticating API requests to the LLM - get this from the website mentioned in the end.
 
 ```bash
-BEARER_TOKEN=your_token_here
+replace <YOUR_BEARER_TOKEN> in src/extension.ts file to your token. Dont include the word Bearer
 ```
 
 # Webview Content
