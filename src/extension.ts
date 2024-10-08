@@ -62,7 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
 								const p = new Promise((resolve, reject) => {
 									const combinedPrompt = `${selectedText}\n${message.prompt}`;
 								
-									if(selectedText.includes("explain")) {
+									if(message.prompt.includes("explain")) {
 										sendToLLMExplain(combinedPrompt)
 										.then((response) => {
 											progress.report({ increment: 100, message: `LLM has finally responded!` });
@@ -73,7 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
 										
 									}
 
-									else if(selectedText.includes("review")) {
+									else if(message.prompt.includes("review")) {
 										sendToLLMReview(combinedPrompt)
 										.then((response) => {
 											progress.report({ increment: 100, message: `LLM has finally responded!` });
