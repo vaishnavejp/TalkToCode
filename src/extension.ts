@@ -2,51 +2,61 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
+// declare types 
 let secretStorage: vscode.SecretStorage;
 let panel: vscode.WebviewPanel;
 let apiKey: any;
 
 export async function activate(context: vscode.ExtensionContext) {
 
+    // Store and retrieve secret (API key) in VS Code's secret storage
     secretStorage = context.secrets;
-    await secretStorage.store('BEARER_TOKEN', '<YOUR_BEARER_TOKEN>');
+    await secretStorage.store('BEARER_TOKEN', 'f3771319-5ea7-4d7a-86d3-6081a0edb268');
     apiKey = await secretStorage.get('BEARER_TOKEN');
 
+    // Register a command that is invoked via the command palette or keybindings to run the extension
     const disposable = vscode.commands.registerCommand('talktocode.talktocode', () => {
         vscode.window.showInformationMessage('Hello from team Code Switch!');
 
+        // Create a new webview panel beside the current editor
         panel = vscode.window.createWebviewPanel(
             'talktocode',
             'TalkToCode',
             vscode.ViewColumn.Beside,
             {
-                enableScripts: true,
-                retainContextWhenHidden: true
+                enableScripts: true, // Allow JavaScript in the webview
+                retainContextWhenHidden: true // Keep the webview active even when hidden
             }
         );
 
+        // Load and set the webview content (HTML, CSS, JS)
         const html = getWebViewContent(context, panel);
         panel.webview.html = html;
 
         const editor = vscode.window.activeTextEditor;
 
+        // Get the selected text from the active editor
         let selectedText = '';
         if (editor) {
             const selection = editor.selection;
             selectedText = editor.document.getText(selection).trim().toLowerCase();
         }
 
+        // Listen for messages from the webview
         panel.webview.onDidReceiveMessage(
             async message => {
                 switch (message.command) {
                     case 'sendPrompt':
 
+                        // Check if any text is selected, if not, display error message
                         if (!selectedText) {
                             vscode.window.showErrorMessage("No code selected.");
                         }
 
+                        // Show a loading in the webview
                         panel.webview.postMessage({ command: 'showLoading' });
 
+                        // Process the selected text and send a prompt to the LLM with a progress bar
                         const promptResponse = await vscode.window.withProgress({
                             location: vscode.ProgressLocation.Notification,
                             title: "I am thinking...",
@@ -56,6 +66,7 @@ export async function activate(context: vscode.ExtensionContext) {
                                 console.log("User canceled the long running operation");
                             });
 
+                            // Progress simulation
                             progress.report({ increment: 0 });
                             for (let i = 0; i < 100; i++) {
                                 setTimeout(() => {
@@ -63,6 +74,7 @@ export async function activate(context: vscode.ExtensionContext) {
                                 }, (i + 1) * 1000);
                             }
 
+                            // Call appropriate LLM API based on the selected text (explain, review, or convert)
                             const p = new Promise((resolve, reject) => {
                                 const combinedPrompt = `${selectedText}\n${message.prompt}`;
 
@@ -100,6 +112,7 @@ export async function activate(context: vscode.ExtensionContext) {
                             return p;
                         });
 
+                        // Hide the loading div and display the response in the webview
                         panel.webview.postMessage({ command: 'hideLoading' });
 
                         panel.webview.postMessage({ command: 'receiveResponse', text: promptResponse });
@@ -116,7 +129,7 @@ export async function activate(context: vscode.ExtensionContext) {
 // This method is called when your extension is deactivated
 export function deactivate() { }
 
-
+// Load the HTML content for the webview panel and inject the CSS and JS file URIs
 function getWebViewContent(context: vscode.ExtensionContext, panel: vscode.WebviewPanel) {
     const htmlPath = path.join(context.extensionPath, 'media', 'chat.html');
     const cssPath = panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, 'media', 'chat.css')));
@@ -129,6 +142,7 @@ function getWebViewContent(context: vscode.ExtensionContext, panel: vscode.Webvi
     return htmlContent;
 }
 
+// Function to send an explain prompt to the LLM API
 async function sendToLLMExplain(combinedPrompt: string): Promise<string> {
     try {
         const response = await fetch("https://api.arliai.com/v1/chat/completions", {
@@ -163,6 +177,8 @@ async function sendToLLMExplain(combinedPrompt: string): Promise<string> {
         return `Error: ${error.message}`;
     }
 }
+
+// Function to send a code conversion prompt to the LLM API
 async function sendToLLMConvert(prompt: string, codeLanguage: string): Promise<string> {
     try {
         const response = await fetch("https://api.arliai.com/v1/chat/completions", {
@@ -197,6 +213,8 @@ async function sendToLLMConvert(prompt: string, codeLanguage: string): Promise<s
         return `Error: ${error.message}`;
     }
 }
+
+// Function to send a code review prompt to the LLM API
 async function sendToLLMReview(combinedPrompt: string): Promise<string> {
     try {
         const response = await fetch("https://api.arliai.com/v1/chat/completions", {
