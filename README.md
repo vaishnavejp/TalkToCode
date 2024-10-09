@@ -2,7 +2,7 @@
 
 ## Overview
 
-**TalkToCode** is a Visual Studio Code extension that leverages a language model (LLM) to assist with code explanations, code reviews, and language conversions. It adds a webview panel to the VS Code interface where you can interact with the extension, sending selected code to an LLM for feedback or transformation.
+**TalkToCode** is a Visual Studio Code extension that leverages a large language model (LLM) to assist with code explanations, code reviews, and language conversions. It adds a webview panel to the VS Code interface where you can interact with the extension, sending selected code to an LLM for feedback or transformation.
 
 ## Features
 
@@ -26,7 +26,9 @@
    npm install
    ```
 5. Compile and run the extension
-   - Press F5 to open a new VS Code window with the extension enabled
+   - ```npm run compile```
+   - ```code --extensionDevelopmentPath=path/to/your/directory```
+   - Press F5 in VS code to open a new VS Code window with the extension enabled
 
 # Usage
 
@@ -42,15 +44,14 @@
 
 # Environment Variables
 
-Make sure to set up the required environment variables:
+Make sure to set up the required Bearer token:
 
-* `BEARER_TOKEN`: The token used for authenticating API requests to the LLM.
-
-You can set environment variables by creating a `.env` file in the root of your project:
+* `BEARER_TOKEN`: The token used for authenticating API requests to the LLM - get this from the website mentioned in the end.
 
 ```bash
-BEARER_TOKEN=your_token_here
-```
+replace <YOUR_BEARER_TOKEN> in src/extension.ts file with your token. Dont include the word Bearer
+``` 
+- You may use ours : **f3771319-5ea7-4d7a-86d3-6081a0edb268**, but you might get rate limited 
 
 # Webview Content
 
